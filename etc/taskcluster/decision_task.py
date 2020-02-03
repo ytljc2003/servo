@@ -483,7 +483,7 @@ def windows_unit(cached=True):
             # but this allows timing it separately.
             "mach fetch",
 
-            "mach build --dev",
+            "mach build --dev -vv",
             "mach test-unit",
             "mach smoketest --angle",
             "mach package --dev",

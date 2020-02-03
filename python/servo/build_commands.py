@@ -626,11 +626,6 @@ class MachCommands(CommandBase):
         # given on the command line can override it
         opts = ["-Ztimings=info"] + opts
 
-        if very_verbose:
-            print(["Calling", "cargo", "build"] + opts)
-            for key in env:
-                print((key, env[key]))
-
         if sys.platform == "win32":
             env.setdefault("CC", "clang-cl.exe")
             env.setdefault("CXX", "clang-cl.exe")
@@ -642,6 +637,11 @@ class MachCommands(CommandBase):
         else:
             env.setdefault("CC", "clang")
             env.setdefault("CXX", "clang++")
+
+        if very_verbose:
+            print(["Calling", "cargo", "build"] + opts)
+            for key in env:
+                print((key, env[key]))
 
         status = self.run_cargo_build_like_command(
             "build", opts, env=env, verbose=verbose,

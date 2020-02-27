@@ -35,9 +35,6 @@ pub struct App {
 
 impl App {
     pub fn run(
-        angle: bool,
-        enable_vsync: bool,
-        use_msaa: bool,
         no_native_titlebar: bool,
         device_pixels_per_px: Option<f32>,
     ) {
@@ -50,9 +47,6 @@ impl App {
             Rc::new(headed_window::Window::new(
                 opts::get().initial_window_size,
                 events_loop.clone(),
-                angle,
-                enable_vsync,
-                use_msaa,
                 no_native_titlebar,
                 device_pixels_per_px,
             ))

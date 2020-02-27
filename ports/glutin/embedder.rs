@@ -4,19 +4,10 @@
 
 //! Implements the global methods required by Servo (not window/gl/compositor related).
 
-use crate::app;
 use crate::events_loop::EventsLoop;
-use crate::window_trait::WindowPortsMethods;
-use gleam::gl;
-use winit;
-use winit::dpi::LogicalSize;
-use winit::EventsLoopClosed;
-use rust_webvr::GlWindowVRService;
 use servo::compositing::windowing::EmbedderMethods;
 use servo::embedder_traits::EventLoopWaker;
 use servo::servo_config::{opts, pref};
-use servo::webvr::VRServiceManager;
-use servo::webvr_traits::WebVRMainThreadHeartbeat;
 use std::cell::RefCell;
 use std::rc::Rc;
 

@@ -4,15 +4,13 @@
 
 //! A winit window implementation.
 
-use crate::app;
 use crate::events_loop::EventsLoop;
 use crate::keyutils::keyboard_event_from_winit;
 use crate::window_trait::{WindowPortsMethods, LINE_HEIGHT};
 use euclid::{
-    Angle, default::Size2D as UntypedSize2D, Point2D, Rotation3D, Scale, Size2D, UnknownUnit,
+    Angle, Point2D, Rotation3D, Scale, Size2D, UnknownUnit,
     Vector2D, Vector3D,
 };
-use gleam::gl;
 use winit::dpi::{LogicalPosition, LogicalSize, PhysicalSize};
 #[cfg(target_os = "macos")]
 use winit::os::macos::{ActivationPolicy, WindowBuilderExt};
@@ -28,7 +26,7 @@ use servo::compositing::windowing::{AnimationState, MouseWindowEvent, WindowEven
 use servo::compositing::windowing::{EmbedderCoordinates, WindowMethods};
 use servo::embedder_traits::Cursor;
 use servo::script_traits::{TouchEventType, WheelMode, WheelDelta};
-use servo::servo_config::{opts, pref};
+use servo::servo_config::opts;
 use servo::servo_geometry::DeviceIndependentPixel;
 use servo::style_traits::DevicePixel;
 use servo::webrender_api::ScrollLocation;
@@ -44,13 +42,10 @@ use surfman::ContextAttributeFlags;
 use surfman::Device;
 use surfman::GLApi;
 use surfman::GLVersion;
-use surfman::Adapter;
 use surfman::NativeWidget;
 use surfman::SurfaceType;
 #[cfg(target_os = "windows")]
 use winapi;
-
-const MULTISAMPLES: u16 = 16;
 
 #[cfg(target_os = "macos")]
 fn builder_with_platform_options(mut builder: winit::WindowBuilder) -> winit::WindowBuilder {
@@ -70,7 +65,6 @@ fn builder_with_platform_options(builder: winit::WindowBuilder) -> winit::Window
 pub struct Window {
     winit_window: winit::Window,
     webrender_surfman: WebrenderSurfman,
-    events_loop: Rc<RefCell<EventsLoop>>,
     screen_size: Size2D<u32, DeviceIndependentPixel>,
     inner_size: Cell<Size2D<u32, DeviceIndependentPixel>>,
     mouse_down_button: Cell<Option<winit::MouseButton>>,
@@ -83,9 +77,6 @@ pub struct Window {
     fullscreen: Cell<bool>,
     xr_rotation: Cell<Rotation3D<f32, UnknownUnit, UnknownUnit>>,
     xr_translation: Cell<Vector3D<f32, UnknownUnit>>,
-    angle: bool,
-    enable_vsync: bool,
-    use_msaa: bool,
     no_native_titlebar: bool,
     device_pixels_per_px: Option<f32>,
 }
@@ -106,9 +97,6 @@ impl Window {
     pub fn new(
         win_size: Size2D<u32, DeviceIndependentPixel>,
         events_loop: Rc<RefCell<EventsLoop>>,
-        angle: bool,
-        enable_vsync: bool,
-        use_msaa: bool,
         no_native_titlebar: bool,
         device_pixels_per_px: Option<f32>,
     ) -> Window {
@@ -178,7 +166,6 @@ impl Window {
         debug!("Created window {:?}", winit_window.id());
         Window {
             winit_window,
-            events_loop,
             webrender_surfman,
             event_queue: RefCell::new(vec![]),
             mouse_down_button: Cell::new(None),
@@ -192,9 +179,6 @@ impl Window {
             screen_size,
             xr_rotation: Cell::new(Rotation3D::identity()),
             xr_translation: Cell::new(Vector3D::zero()),
-            angle,
-            enable_vsync,
-            use_msaa,
             no_native_titlebar,
             device_pixels_per_px,
         }
@@ -536,7 +520,9 @@ impl WindowPortsMethods for Window {
 }
 
 impl webxr::glwindow::GlWindow for Window {
-    fn create_native_widget(&self, device: &Device) -> NativeWidget {
+    fn create_native_widget(&self, _device: &Device) -> NativeWidget {
+        // This is hy we keep no_native_titlebar around
+	let _nntb = self.no_native_titlebar;
         unimplemented!()
     }
 

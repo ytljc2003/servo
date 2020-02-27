@@ -5,8 +5,7 @@
 //! A headless window implementation.
 
 use crate::window_trait::WindowPortsMethods;
-use euclid::{default::Size2D as UntypedSize2D, Point2D, Rotation3D, Scale, Size2D, UnknownUnit, Vector3D};
-use gleam::gl;
+use euclid::{Point2D, Rotation3D, Scale, Size2D, UnknownUnit, Vector3D};
 use winit;
 use servo::compositing::windowing::{AnimationState, WindowEvent};
 use servo::compositing::windowing::{EmbedderCoordinates, WindowMethods};
@@ -16,16 +15,7 @@ use servo::webrender_api::units::{DeviceIntRect, DeviceIntSize};
 use servo_media::player::context as MediaPlayerCtxt;
 use servo::webrender_traits::WebrenderSurfman;
 use std::cell::Cell;
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::cell::RefCell;
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::ffi::CString;
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::mem;
-use std::os::raw::c_void;
-use std::ptr;
 use std::rc::Rc;
-use surfman::Adapter;
 use surfman::Connection;
 use surfman::ContextAttributes;
 use surfman::ContextAttributeFlags;
@@ -158,7 +148,7 @@ impl WindowMethods for Window {
 }
 
 impl webxr::glwindow::GlWindow for Window {
-    fn create_native_widget(&self, device: &Device) -> NativeWidget {
+    fn create_native_widget(&self, _device: &Device) -> NativeWidget {
         unimplemented!()
     }
 

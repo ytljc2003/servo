@@ -521,8 +521,8 @@ impl WindowPortsMethods for Window {
 
 impl webxr::glwindow::GlWindow for Window {
     fn create_native_widget(&self, _device: &Device) -> NativeWidget {
-        // This is hy we keep no_native_titlebar around
-	let _nntb = self.no_native_titlebar;
+        // This is why we keep no_native_titlebar around
+        let _nntb = self.no_native_titlebar;
         unimplemented!()
     }
 

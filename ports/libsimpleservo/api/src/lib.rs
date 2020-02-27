@@ -11,7 +11,6 @@ pub use servo::embedder_traits::{MediaSessionPlaybackState, PromptResult};
 pub use servo::script_traits::{MediaSessionActionType, MouseButton};
 
 use getopts::Options;
-use gl_glue::egl;
 use servo::compositing::windowing::{
     AnimationState, EmbedderCoordinates, EmbedderMethods, MouseWindowEvent, WindowEvent,
     WindowMethods,
@@ -36,11 +35,9 @@ use std::mem;
 use std::os::raw::c_void;
 use std::path::PathBuf;
 use std::rc::Rc;
-use surfman::Adapter;
 use surfman::Connection;
 use surfman::ContextAttributeFlags;
 use surfman::ContextAttributes;
-use surfman::Device;
 use surfman::GLVersion;
 use surfman::NativeWidget;
 use surfman::SurfaceType;
@@ -232,7 +229,6 @@ pub fn init(
 
     let window_callbacks = Rc::new(ServoWindowCallbacks {
         host_callbacks: callbacks,
-        gl: gl.clone(),
         coordinates: RefCell::new(init_opts.coordinates),
         density: init_opts.density,
         gl_context_pointer: init_opts.gl_context_pointer,
@@ -693,7 +689,6 @@ struct ServoEmbedderCallbacks {
 }
 
 struct ServoWindowCallbacks {
-    gl: Rc<dyn gl::Gl>,
     host_callbacks: Box<dyn HostTrait>,
     coordinates: RefCell<Coordinates>,
     density: f32,

@@ -14,8 +14,6 @@ use euclid::{
 use winit::dpi::{LogicalPosition, LogicalSize, PhysicalSize};
 #[cfg(target_os = "macos")]
 use winit::os::macos::{ActivationPolicy, WindowBuilderExt};
-#[cfg(target_os = "linux")]
-use winit::os::unix::WindowExt;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use winit::Icon;
 use winit::{ElementState, KeyboardInput, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode};

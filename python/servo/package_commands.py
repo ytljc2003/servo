@@ -747,6 +747,7 @@ class PackageCommands(CommandBase):
 
 def setup_uwp_signing(ms_app_store, fail_miss_cert):
     if ms_app_store:
+        print("Packaging for appstore. Skipping signing")
         return ["/p:AppxPackageSigningEnabled=false"]
 
     # App package needs to be signed. If we find a certificate that has been installed
@@ -759,7 +760,7 @@ def setup_uwp_signing(ms_app_store, fail_miss_cert):
             exit(1)
 
     if "TASKCLUSTER_PROXY_URL" in os.environ:
-        print("Installing signing certificate")
+        print("Packaging on TC. Using secret certificate")
         pfx = get_taskcluster_secret("windows-codesign-cert/latest")["pfx"]
         open("servo.pfx", "wb").write(base64.b64decode(pfx["base64"]))
         run_powershell_cmd('Import-PfxCertificate -FilePath .\servo.pfx -CertStoreLocation Cert:\CurrentUser\My')
@@ -790,6 +791,7 @@ def setup_uwp_signing(ms_app_store, fail_miss_cert):
         print("Warning: Using first one")
         thumbprint = certs[0]
     else:
+        print("Found certificate")
         thumbprint = certs[0]
     return ["/p:AppxPackageSigningEnabled=true", "/p:PackageCertificateThumbprint=" + thumbprint]
 

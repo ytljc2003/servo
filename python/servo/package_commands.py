@@ -759,7 +759,7 @@ def setup_uwp_signing(ms_app_store, fail_miss_cert):
             print("ERROR: PowerShell command failed: ", cmd)
             exit(1)
 
-    if True: # FIXME: how to test TC?
+    if "TASKCLUSTER_PROXY_URL" in os.environ:
         print("Packaging on TC. Using secret certificate")
         pfx = get_taskcluster_secret("windows-codesign-cert/latest")["pfx"]
         open("servo.pfx", "wb").write(base64.b64decode(pfx["base64"]))

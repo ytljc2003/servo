@@ -19,6 +19,7 @@ use gfx_traits::Epoch;
 use image::{DynamicImage, ImageFormat};
 use ipc_channel::ipc;
 use libc::c_void;
+use log::warn;
 use msg::constellation_msg::{PipelineId, PipelineIndex, PipelineNamespaceId};
 use net_traits::image::base::Image;
 use net_traits::image_cache::CorsStatus;
@@ -366,7 +367,9 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
     }
 
     pub fn deinit(self) {
-        self.webrender_surfman.make_gl_context_current().unwrap();
+        if let Err(err) = self.webrender_surfman.make_gl_context_current() {
+            warn!("Failed to make GL context current: {:?}", err);
+        }
         self.webrender.deinit();
     }
 
@@ -1261,14 +1264,16 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
     ) -> Result<Option<Image>, UnableToComposite> {
         let size = self.embedder_coordinates.framebuffer.to_u32();
 
-        self.webrender_surfman.make_gl_context_current().unwrap();
+        if let Err(err) = self.webrender_surfman.make_gl_context_current() {
+            warn!("Failed to make GL context current: {:?}", err);
+        }
         debug_assert_eq!(self.webrender_gl.get_error(), gleam::gl::NO_ERROR);
 
         // Bind the webrender framebuffer
         let framebuffer_object = self
             .webrender_surfman
             .context_surface_info()
-            .unwrap()
+            .unwrap_or(None)
             .map(|info| info.framebuffer_object)
             .unwrap_or(0);
         self.webrender_gl
@@ -1442,7 +1447,9 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
         };
 
         // Perform the page flip. This will likely block for a while.
-        self.webrender_surfman.present().unwrap();
+        if let Err(err) = self.webrender_surfman.present() {
+            warn!("Failed to present surface: {:?}", err);
+        }
 
         self.last_composite_time = precise_time_ns();
 

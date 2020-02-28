@@ -39,7 +39,6 @@ use surfman::Connection;
 use surfman::ContextAttributeFlags;
 use surfman::ContextAttributes;
 use surfman::GLVersion;
-use surfman::NativeWidget;
 use surfman::SurfaceType;
 
 thread_local! {
@@ -62,7 +61,7 @@ pub struct InitOptions {
     pub gl_context_pointer: Option<*const c_void>,
     pub native_display_pointer: Option<*const c_void>,
     pub gl_version: GLVersion,
-    pub native_widget: NativeWidget,
+    pub native_widget: *mut c_void,
 }
 
 pub enum VRInitOptions {
@@ -221,7 +220,12 @@ pub fn init(
         ContextAttributeFlags::STENCIL;
     let version = init_opts.gl_version;
     let context_attributes = ContextAttributes { flags, version };
-    let native_widget = init_opts.native_widget;
+    let native_widget = unsafe {
+        connection.create_native_widget_from_ptr(
+            init_opts.native_widget,
+            init_opts.coordinates.framebuffer.to_untyped(),
+        )
+    };
     let surface_type = SurfaceType::Widget { native_widget };
     let webrender_surfman =
         WebrenderSurfman::create(&connection, &adapter, context_attributes, surface_type)

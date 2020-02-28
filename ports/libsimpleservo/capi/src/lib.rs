@@ -29,7 +29,6 @@ use std::slice;
 use std::str::FromStr;
 use std::sync::RwLock;
 use surfman::GLVersion;
-use surfman::NativeWidget;
 
 extern "C" fn default_panic_handler(msg: *const c_char) {
     let c_str: &CStr = unsafe { CStr::from_ptr(msg) };
@@ -413,22 +412,6 @@ unsafe fn init(
         major: opts.gl_version[0],
         minor: opts.gl_version[1],
     };
-    // TODO: is there anything better we can do here?
-    let native_widget = if cfg!(target_os = "android") {
-        NativeWidget {
-            native_window: opts.native_widget,
-        }
-    } else if cfg!(target_os = "macos") {
-        NativeWidget {
-            view: opts.native_widget,
-        }
-    } else if cfg!(target_os = "windows") {
-        NativeWidget {
-            egl_native_window: opts.native_widget,
-        }
-    } else {
-        panic!("Simple Servo C API is not supported on this platform")
-    };
 
     let opts = InitOptions {
         args,
@@ -445,7 +428,7 @@ unsafe fn init(
         gl_context_pointer: gl_context,
         native_display_pointer: display,
         gl_version,
-        native_widget,
+        native_widget: opts.native_widget,
     };
 
     let wakeup = Box::new(WakeupCallback::new(wakeup));

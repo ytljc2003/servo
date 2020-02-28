@@ -144,22 +144,24 @@ impl Window {
         winit_window.show();
 
         // Initialize surfman
-        let connection = Connection::from_winit_window(&winit_window).unwrap();
-        let adapter = connection.create_adapter().unwrap();
+        let connection = Connection::from_winit_window(&winit_window).expect("Failed to create connection");
+        let adapter = connection.create_adapter().expect("Failed to create adapter");
         let flags = ContextAttributeFlags::ALPHA | ContextAttributeFlags::DEPTH;
         let version = match connection.gl_api() {
             GLApi::GLES => GLVersion { major: 3, minor: 0 },
             GLApi::GL => GLVersion { major: 3, minor: 2 }
         };
         let context_attributes = ContextAttributes { flags, version };
-        let native_widget = connection.create_native_widget_from_winit_window(&winit_window).unwrap();
+        let native_widget = connection
+            .create_native_widget_from_winit_window(&winit_window)
+            .expect("Failed to create native widget");
         let surface_type = SurfaceType::Widget { native_widget };
         let webrender_surfman = WebrenderSurfman::create(
             &connection,
             &adapter,
             context_attributes,
             surface_type,
-        ).unwrap();
+        ).expect("Failed to create WR surfman");
 
         debug!("Created window {:?}", winit_window.id());
         Window {

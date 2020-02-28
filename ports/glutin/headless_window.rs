@@ -38,8 +38,8 @@ impl Window {
         device_pixels_per_px: Option<f32>,
     ) -> Rc<dyn WindowPortsMethods> {
         // Initialize surfman
-        let connection = Connection::new().unwrap();
-        let adapter = connection.create_software_adapter().unwrap();
+        let connection = Connection::new().expect("Failed to create connection");
+        let adapter = connection.create_software_adapter().expect("Failed to create adapter");
         let flags = ContextAttributeFlags::ALPHA | ContextAttributeFlags::DEPTH;
         let version = match connection.gl_api() {
             GLApi::GLES => GLVersion { major: 3, minor: 0 },
@@ -53,7 +53,7 @@ impl Window {
             &adapter,
             context_attributes,
             surface_type,
-        ).unwrap();
+        ).expect("Failed to create WR surfman");
 
         let window = Window {
             webrender_surfman,
@@ -87,9 +87,9 @@ impl WindowPortsMethods for Window {
     }
 
     fn page_height(&self) -> f32 {
-        let info = self.webrender_surfman.context_surface_info().unwrap().unwrap();
+        let height = self.webrender_surfman.context_surface_info().unwrap_or(None).unwrap_or(0);
         let dpr = self.servo_hidpi_factor();
-        info.size.height as f32 * dpr.get()
+        height as f32 * dpr.get()
     }
 
     fn set_fullscreen(&self, state: bool) {
@@ -112,8 +112,11 @@ impl WindowPortsMethods for Window {
 impl WindowMethods for Window {
      fn get_coordinates(&self) -> EmbedderCoordinates {
         let dpr = self.servo_hidpi_factor();
-        let info = self.webrender_surfman.context_surface_info().unwrap().unwrap();
-        let size = Size2D::from_untyped(info.size);
+        let size = self.webrender_surfman
+            .context_surface_info()
+            .unwrap_or(None)
+            .map(|info| Size2D::from_untyped(info.size));
+            .unwrap_or(Size2D::new(0, 0));
         let viewport = DeviceIntRect::new(Point2D::zero(), size);
         let framebuffer = DeviceIntSize::from_untyped(info.size);
         EmbedderCoordinates {

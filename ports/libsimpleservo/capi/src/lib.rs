@@ -413,8 +413,21 @@ unsafe fn init(
         major: opts.gl_version[0],
         minor: opts.gl_version[1],
     };
-    let native_widget = NativeWidget {
-        egl_native_window: opts.native_widget,
+    // TODO: is there anything better we can do here?
+    let native_widget = if cfg!(target_os = "android") {
+        NativeWidget {
+            native_window: opts.native_widget,
+        }
+    } else if cfg!(target_os = "macos") {
+        NativeWidget {
+            view: opts.native_widget,
+        }
+    } else if cfg!(target_os = "windows") {
+        NativeWidget {
+            egl_native_window: opts.native_widget,
+        }
+    } else {
+        panic!("Simple Servo C API is not supported on this platform")
     };
 
     let opts = InitOptions {

@@ -574,7 +574,7 @@ impl GenericDrawTarget for raqote::DrawTarget {
         self.push_clip(path.as_raqote());
     }
     fn set_transform(&mut self, matrix: &Transform2D<f32>) {
-        self.set_transform(matrix);
+        self.set_transform(&matrix.inverse().unwrap());
     }
     fn snapshot(&self) -> SourceSurface {
         SourceSurface::Raqote(self.snapshot_data_owned())

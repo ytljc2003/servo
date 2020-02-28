@@ -10,6 +10,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from datetime import datetime
+import base64
 import hashlib
 import json
 import os
@@ -90,6 +91,15 @@ else:
         except Exception as e:
             shutil.rmtree(dir_name)
             raise e
+
+
+def get_taskcluster_secret(name):
+    url = (
+        os.environ.get("TASKCLUSTER_PROXY_URL", "http://taskcluster") +
+        "/api/secrets/v1/secret/project/servo/" +
+        name
+    )
+    return json.load(urllib.request.urlopen(url))["secret"]
 
 
 def otool(s):
@@ -592,14 +602,6 @@ class PackageCommands(CommandBase):
     def upload_nightly(self, platform, secret_from_taskcluster):
         import boto3
 
-        def get_taskcluster_secret(name):
-            url = (
-                os.environ.get("TASKCLUSTER_PROXY_URL", "http://taskcluster") +
-                "/api/secrets/v1/secret/project/servo/" +
-                name
-            )
-            return json.load(urllib.request.urlopen(url))["secret"]
-
         def get_s3_secret():
             aws_access_key = None
             aws_secret_access_key = None
@@ -755,6 +757,14 @@ def setup_uwp_signing(ms_app_store, fail_miss_cert):
         except subprocess.CalledProcessError:
             print("ERROR: PowerShell command failed: ", cmd)
             exit(1)
+
+    if "TASKCLUSTER_PROXY_URL" in os.environ:
+        print("Installing signing certificate")
+        pfx = get_taskcluster_secret("windows-codesign-cert/latest")["pfx"]
+        open("servo.pfx", "wb").write(base64.b64decode(pfx["base64"]))
+        run_powershell_cmd('Import-PfxCertificate -FilePath .\servo.pfx -CertStoreLocation Cert:\CurrentUser\My')
+        os.remove("servo.pfx")
+
     # Parse appxmanifest to find the publisher name
     manifest_file = path.join(os.getcwd(), 'support', 'hololens', 'ServoApp', 'Package.appxmanifest')
     manifest = xml.etree.ElementTree.parse(manifest_file)
